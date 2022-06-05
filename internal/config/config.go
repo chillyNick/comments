@@ -30,6 +30,18 @@ type Rest struct {
 	Host string `yaml:"host"`
 }
 
+type Metrics struct {
+	Port int    `yaml:"port"`
+	Host string `yaml:"host"`
+	Path string `yaml:"path"`
+}
+
+type Jaeger struct {
+	Service string `yaml:"service"`
+	Host    string `yaml:"host"`
+	Port    string `yaml:"port"`
+}
+
 type Kafka struct {
 	ProducerTopic string   `yaml:"producerTopic"`
 	ConsumerTopic string   `yaml:"consumerTopic"`
@@ -41,6 +53,9 @@ type Config struct {
 	Rest     Rest     `yaml:"rest"`
 	Database Database `yaml:"database"`
 	Kafka    Kafka    `yaml:"kafka"`
+	Metrics  Metrics  `yaml:"metrics"`
+	Jaeger   Jaeger   `yaml:"jaeger"`
+	Debug    bool     `yaml:"debug"`
 }
 
 func ReadConfigYML(filePath string) error {

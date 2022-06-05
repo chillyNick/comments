@@ -6,42 +6,49 @@ import (
 	"github.com/homework3/comments/internal/config"
 	"github.com/homework3/comments/internal/database"
 	"github.com/homework3/comments/internal/repository/pgx_repository"
+	"github.com/homework3/comments/internal/tracer"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
-	"log"
-	"net/http"
 )
 
 func main() {
 	if err := config.ReadConfigYML("config.yml"); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("Failed to read configuration")
 	}
 
-	a := app.App{Config: config.GetConfigInstance()}
+	cfg := config.GetConfigInstance()
+
+	if cfg.Debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
 	add := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s",
-		a.Config.Database.Host,
-		a.Config.Database.Port,
-		a.Config.Database.User,
-		a.Config.Database.Password,
-		a.Config.Database.Name,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Name,
 	)
 
 	adp, err := database.NewPgxPool(context.Background(), add)
 	if err != nil {
-		log.Fatalf("Db connect failed: %s", err)
+		log.Fatal().Err(err).Msg("Db connect failed: %s")
 	}
 	defer adp.Close()
 
-	a.Repo = pgx_repository.New(adp)
+	repo := pgx_repository.New(adp)
 
-	s := &http.Server{
-		Addr:    fmt.Sprintf("localhost:%d", a.Config.Rest.Port),
-		Handler: a.Routes(),
-	}
-
-	err = s.ListenAndServe()
+	tracing, err := tracer.NewTracer(&cfg)
 	if err != nil {
-		log.Fatal(err)
+		log.Error().Err(err).Msg("Failed init tracing")
+
+		return
+	}
+	defer tracing.Close()
+
+	if err = app.New(cfg, repo).Start(&cfg); err != nil {
+		log.Error().Err(err).Msg("Failed to start app")
 	}
 }

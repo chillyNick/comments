@@ -2,7 +2,7 @@ package pgx_repository
 
 import "golang.org/x/net/context"
 
-func (r *repository) AddComment(ctx context.Context, comment string, itemId, userId int32, statusId int) (int, error) {
+func (r *repository) AddComment(ctx context.Context, comment string, itemId, userId int32, statusId int) (int64, error) {
 	const query = `
 		INSERT INTO comment (
 			user_id, item_id, comment, status_id
@@ -11,7 +11,7 @@ func (r *repository) AddComment(ctx context.Context, comment string, itemId, use
 		) RETURNING id
 	`
 
-	var commentId int
+	var commentId int64
 	err := r.pool.QueryRow(ctx, query,
 		userId,
 		itemId,
@@ -22,7 +22,7 @@ func (r *repository) AddComment(ctx context.Context, comment string, itemId, use
 	return commentId, err
 }
 
-func (r *repository) UpdateCommentStatus(ctx context.Context, id, statusId int) error {
+func (r *repository) UpdateCommentStatus(ctx context.Context, id int64, statusId int) error {
 	const query = `
 		UPDATE comment
 		set status_id = $2

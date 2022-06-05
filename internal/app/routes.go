@@ -2,29 +2,22 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Shopify/sarama"
+	"github.com/gorilla/mux"
 	"github.com/homework3/comments/internal/dto"
 	"github.com/homework3/comments/internal/messageBroker/kafka"
 	"github.com/homework3/comments/internal/model"
+	"github.com/homework3/comments/pkg/mb_model"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
-	"net/http/pprof"
 )
 
-func (a *App) Routes() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/comment", a.addComment)
-	attachPprof(mux)
+func (a *App) getRouter() *mux.Router {
+	r := mux.NewRouter()
+	r.HandleFunc("/comment", a.addComment)
 
-	return mux
-}
-
-func attachPprof(mux *http.ServeMux) {
-	mux.HandleFunc("/debug/pprof/", pprof.Index)
-	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	return r
 }
 
 func (a *App) addComment(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +49,33 @@ func (a *App) addComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//write to the mb
-	kafka.CreateProducer(a.Config.Kafka.Brokers)
+	pr := kafka.CreateProducer(a.Config.Kafka.Brokers)
+	byteVal, err := json.Marshal(mb_model.Comment{
+		Id:      commentId,
+		UserId:  cmt.UserId,
+		ItemId:  cmt.ItemId,
+		Comment: cmt.Comment,
+	})
+	if err != nil {
+		log.Printf("failed to save comment into db: %s\n", err)
+		http.Error(w, "Failed to process comment", http.StatusInternalServerError)
+
+		return
+	}
+
+	msg := sarama.ProducerMessage{
+		Topic: a.Config.Kafka.ProducerTopic,
+		Key:   nil,
+		Value: sarama.ByteEncoder(byteVal),
+	}
+
+	_, _, err = pr.SendMessage(&msg)
+	if err != nil {
+		log.Printf("failed to send message into mb: %s\n", err)
+		http.Error(w, "Failed to process comment", http.StatusInternalServerError)
+
+		return
+	}
 
 	err = a.Repo.UpdateCommentStatus(context.Background(), commentId, model.CommentStatusUnderModeration)
 	if err != nil {

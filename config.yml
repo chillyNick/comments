@@ -1,5 +1,18 @@
+debug: true
+
 rest:
+  host: localhost
   port: 8080
+
+metrics:
+  host: localhost
+  port: 9100
+  path: /metrics
+
+jaeger:
+  service: "comments"
+  host: "localhost"
+  port: "6831"
 
 database:
   host: localhost
