@@ -10,6 +10,27 @@ import (
 	"strconv"
 )
 
+var totalRequests = promauto.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Number of get requests.",
+	},
+	[]string{"path"},
+)
+
+var responseStatus = promauto.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "http_response_status",
+		Help: "Status of HTTP response",
+	},
+	[]string{"status"},
+)
+
+var httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+	Name: "http_duration_time_seconds",
+	Help: "Duration of HTTP requests.",
+}, []string{"path"})
+
 func CreateRestServer(addr string, router *mux.Router) *http.Server {
 	router.Use(middleware)
 
@@ -27,27 +48,6 @@ type responseWriter struct {
 func newResponseWriter(w http.ResponseWriter) *responseWriter {
 	return &responseWriter{w, http.StatusOK}
 }
-
-var totalRequests = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "http_requests_total",
-		Help: "Number of get requests.",
-	},
-	[]string{"path"},
-)
-
-var responseStatus = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "response_status",
-		Help: "Status of HTTP response",
-	},
-	[]string{"status"},
-)
-
-var httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
-	Name: "http_response_time_seconds",
-	Help: "Duration of HTTP requests.",
-}, []string{"path"})
 
 var restTag = opentracing.Tag{Key: string(ext.Component), Value: "rest"}
 

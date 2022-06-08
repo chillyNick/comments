@@ -48,7 +48,7 @@ func main() {
 	}
 	defer tracing.Close()
 
-	if err = app.New(cfg, repo).Start(&cfg); err != nil {
+	if err = app.New(repo).Start(&cfg); err != nil {
 		log.Error().Err(err).Msg("Failed to start app")
 	}
 }

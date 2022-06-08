@@ -1,4 +1,4 @@
-package mb_model
+package model
 
 type Comment struct {
 	Id      int64

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/homework3/comments/internal/config"
 	"github.com/homework3/comments/internal/http_server"
+	"github.com/homework3/comments/internal/kafka"
 	"github.com/homework3/comments/internal/metrics"
 	"github.com/homework3/comments/internal/repository"
 	"github.com/rs/zerolog/log"
@@ -16,20 +17,34 @@ import (
 )
 
 type App struct {
-	Config config.Config
-	Repo   repository.Repository
+	repo     repository.Repository
+	producer kafka.Producer
 }
 
-func New(cnf config.Config, repo repository.Repository) *App {
+func New(repo repository.Repository) *App {
 	return &App{
-		Config: cnf,
-		Repo:   repo,
+		repo: repo,
 	}
 }
 
 func (a *App) Start(cfg *config.Config) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	go func() {
+		if err := kafka.StartProcessMessages(ctx, a.repo, &cfg.Kafka); err != nil {
+			log.Error().Err(err).Msg("Failed to start kafka consumer")
+			cancel()
+		}
+	}()
+
+	producer, err := kafka.CreateProducer(&cfg.Kafka)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to start kafka producer")
+
+		return err
+	}
+	a.producer = producer
 
 	restAddr := fmt.Sprintf("%s:%v", cfg.Rest.Host, cfg.Rest.Port)
 	metricsAddr := fmt.Sprintf("%s:%v", cfg.Metrics.Host, cfg.Metrics.Port)

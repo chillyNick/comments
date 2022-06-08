@@ -1,4 +1,4 @@
-package model
+package db_model
 
 const (
 	CommentStatusNew = iota + 1

@@ -2,14 +2,10 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/Shopify/sarama"
 	"github.com/gorilla/mux"
+	"github.com/homework3/comments/internal/db_model"
 	"github.com/homework3/comments/internal/dto"
-	"github.com/homework3/comments/internal/messageBroker/kafka"
-	"github.com/homework3/comments/internal/model"
-	"github.com/homework3/comments/pkg/mb_model"
-	"golang.org/x/net/context"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -40,46 +36,28 @@ func (a *App) addComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "json fields must be not empty", http.StatusUnprocessableEntity)
 	}
 
-	commentId, err := a.Repo.AddComment(context.Background(), cmt.Comment, cmt.ItemId, cmt.UserId, model.CommentStatusNew)
+	commentId, err := a.repo.AddComment(r.Context(), cmt.Comment, cmt.ItemId, cmt.UserId, db_model.CommentStatusNew)
 	if err != nil {
-		log.Printf("failed to save comment into db: %s\n", err)
+		log.Error().Err(err).Msg("Failed to save comment into db")
 		http.Error(w, "Failed to process comment", http.StatusInternalServerError)
 
 		return
 	}
 
-	//write to the mb
-	pr := kafka.CreateProducer(a.Config.Kafka.Brokers)
-	byteVal, err := json.Marshal(mb_model.Comment{
+	if err = a.producer.SendComment(r.Context(), db_model.Comment{
 		Id:      commentId,
 		UserId:  cmt.UserId,
 		ItemId:  cmt.ItemId,
 		Comment: cmt.Comment,
-	})
-	if err != nil {
-		log.Printf("failed to save comment into db: %s\n", err)
+	}); err != nil {
 		http.Error(w, "Failed to process comment", http.StatusInternalServerError)
 
 		return
 	}
 
-	msg := sarama.ProducerMessage{
-		Topic: a.Config.Kafka.ProducerTopic,
-		Key:   nil,
-		Value: sarama.ByteEncoder(byteVal),
-	}
-
-	_, _, err = pr.SendMessage(&msg)
+	err = a.repo.UpdateCommentStatus(r.Context(), commentId, db_model.CommentStatusUnderModeration)
 	if err != nil {
-		log.Printf("failed to send message into mb: %s\n", err)
-		http.Error(w, "Failed to process comment", http.StatusInternalServerError)
-
-		return
-	}
-
-	err = a.Repo.UpdateCommentStatus(context.Background(), commentId, model.CommentStatusUnderModeration)
-	if err != nil {
-		log.Printf("failed to update comment status: %s", err)
+		log.Error().Err(err).Msg("Failed to update comment status")
 	}
 
 	w.Write([]byte("Comment was added"))
