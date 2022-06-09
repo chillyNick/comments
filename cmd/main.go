@@ -7,6 +7,8 @@ import (
 	"github.com/homework3/comments/internal/database"
 	"github.com/homework3/comments/internal/repository/pgx_repository"
 	"github.com/homework3/comments/internal/tracer"
+	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
@@ -23,7 +25,7 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	add := fmt.Sprintf(
+	adr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s",
 		cfg.Database.Host,
 		cfg.Database.Port,
@@ -32,7 +34,12 @@ func main() {
 		cfg.Database.Name,
 	)
 
-	adp, err := database.NewPgxPool(context.Background(), add)
+	err := runMigration("pgx", adr, cfg.Database.Migrations)
+	if err != nil {
+		return
+	}
+
+	adp, err := database.NewPgxPool(context.Background(), adr)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Db connect failed: %s")
 	}
@@ -51,4 +58,22 @@ func main() {
 	if err = app.New(repo).Start(&cfg); err != nil {
 		log.Error().Err(err).Msg("Failed to start app")
 	}
+}
+
+func runMigration(driver, adr, migration string) error {
+	conn, err := goose.OpenDBWithDriver(driver, adr)
+	if err != nil {
+		log.Error().Err(err).Msg("db connection failed")
+
+		return err
+	}
+	defer conn.Close()
+
+	if err = goose.Up(conn, migration); err != nil {
+		log.Error().Err(err).Msg("Migration failed")
+
+		return err
+	}
+
+	return nil
 }

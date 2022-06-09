@@ -4,8 +4,10 @@ go 1.18
 
 require (
 	github.com/Shopify/sarama v1.34.0
+	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/pressly/goose/v3 v3.5.3
 	github.com/prometheus/client_golang v1.12.2
 	github.com/rs/zerolog v1.15.0
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
@@ -23,7 +25,6 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect

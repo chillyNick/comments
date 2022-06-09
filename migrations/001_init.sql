@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE status (
     id int PRIMARY KEY,
     name varchar(32)
@@ -19,3 +20,7 @@ CREATE TABLE comment (
      comment varchar(512) not null,
      status_id int not null REFERENCES status(id)
 );
+
+-- +goose Down
+DROP TABLE comment;
+DROP TABLE status;

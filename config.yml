@@ -20,6 +20,7 @@ database:
   user: postgres
   password: postgres
   name: homework-3
+  migrations: migrations
 
 kafka:
   producerTopic: "comments"
