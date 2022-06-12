@@ -51,12 +51,19 @@ type Kafka struct {
 	Brokers       []string `yaml:"brokers"`
 }
 
+type Redis struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Password string `yaml:"password"`
+}
+
 type Config struct {
 	Rest     Rest     `yaml:"rest"`
 	Database Database `yaml:"database"`
 	Kafka    Kafka    `yaml:"kafka"`
 	Metrics  Metrics  `yaml:"metrics"`
 	Jaeger   Jaeger   `yaml:"jaeger"`
+	Redis    Redis    `yaml:"redis"`
 	Debug    bool     `yaml:"debug"`
 }
 

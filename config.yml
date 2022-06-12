@@ -29,3 +29,8 @@ kafka:
   groupId: "comments"
   brokers:
     - "localhost:9094"
+
+redis:
+  host: localhost
+  port: 6379
+  password:

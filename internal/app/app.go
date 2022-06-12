@@ -3,6 +3,8 @@ package app
 import (
 	"errors"
 	"fmt"
+	"github.com/homework3/comments/internal/cache"
+	"github.com/homework3/comments/internal/cache/redis"
 	"github.com/homework3/comments/internal/config"
 	"github.com/homework3/comments/internal/http_server"
 	"github.com/homework3/comments/internal/kafka"
@@ -19,6 +21,7 @@ import (
 type App struct {
 	repo     repository.Repository
 	producer kafka.Producer
+	cache    cache.Cache
 }
 
 func New(repo repository.Repository) *App {
@@ -45,6 +48,7 @@ func (a *App) Start(cfg *config.Config) error {
 		return err
 	}
 	a.producer = producer
+	a.cache = redis.New(&cfg.Redis)
 
 	restAddr := fmt.Sprintf("%s:%v", cfg.Rest.Host, cfg.Rest.Port)
 	metricsAddr := fmt.Sprintf("%s:%v", cfg.Metrics.Host, cfg.Metrics.Port)
@@ -79,16 +83,28 @@ func (a *App) Start(cfg *config.Config) error {
 		log.Info().Msgf("ctx.Done: %v", done)
 	}
 
-	if err := restServer.Shutdown(ctx); err != nil {
+	if err = restServer.Shutdown(ctx); err != nil {
 		log.Error().Err(err).Msg("restServer.Shutdown")
 	} else {
 		log.Info().Msg("restServer shut down correctly")
 	}
 
-	if err := metricsServer.Shutdown(ctx); err != nil {
+	if err = metricsServer.Shutdown(ctx); err != nil {
 		log.Error().Err(err).Msg("metricsServer.Shutdown")
 	} else {
 		log.Info().Msg("metricsServer shut down correctly")
+	}
+
+	if err = a.producer.Close(); err != nil {
+		log.Error().Err(err).Msg("producer close")
+	} else {
+		log.Info().Msg("producer close correctly")
+	}
+
+	if err = a.cache.Close(); err != nil {
+		log.Error().Err(err).Msg("cache close")
+	} else {
+		log.Info().Msg("cache close correctly")
 	}
 
 	return nil
