@@ -1,10 +1,10 @@
 package db_model
 
 const (
-	CommentStatusNew = iota + 1
-	CommentStatusUnderModeration
-	CommentStatusModerationFailed
-	CommentStatusModerationPassed
+	CommentStatusNew              = "new"
+	CommentStatusUnderModeration  = "under_moderation"
+	CommentStatusModerationFailed = "moderation_failed"
+	CommentStatusModerationPassed = "moderation_passed"
 )
 
 type Comment struct {
@@ -12,5 +12,5 @@ type Comment struct {
 	UserId   int32
 	ItemId   int32
 	Comment  string
-	StatusId int32
+	StatusId string
 }

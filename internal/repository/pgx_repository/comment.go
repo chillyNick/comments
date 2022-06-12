@@ -2,7 +2,7 @@ package pgx_repository
 
 import "golang.org/x/net/context"
 
-func (r *repository) AddComment(ctx context.Context, comment string, itemId, userId int32, statusId int) (int64, error) {
+func (r *repository) AddComment(ctx context.Context, comment string, itemId, userId int32, statusId string) (int64, error) {
 	const query = `
 		INSERT INTO comment (
 			user_id, item_id, comment, status_id
@@ -22,7 +22,7 @@ func (r *repository) AddComment(ctx context.Context, comment string, itemId, use
 	return commentId, err
 }
 
-func (r *repository) UpdateCommentStatus(ctx context.Context, id int64, statusId int) error {
+func (r *repository) UpdateCommentStatus(ctx context.Context, id int64, statusId string) error {
 	const query = `
 		UPDATE comment
 		set status_id = $2

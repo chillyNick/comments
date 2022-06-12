@@ -59,7 +59,7 @@ func (c *consumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			continue
 		}
 
-		var status int
+		var status string
 		switch comment.Status {
 		case model.ModerationCommentStatusPassed:
 			status = db_model.CommentStatusModerationPassed

@@ -34,9 +34,11 @@ func main() {
 		cfg.Database.Name,
 	)
 
-	err := runMigration("pgx", adr, cfg.Database.Migrations)
-	if err != nil {
-		return
+	if cfg.Database.MigrationsOn {
+		err := runMigration("pgx", adr, cfg.Database.Migrations)
+		if err != nil {
+			return
+		}
 	}
 
 	adp, err := database.NewPgxPool(context.Background(), adr)

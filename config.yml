@@ -21,6 +21,7 @@ database:
   password: docker
   name: comments
   migrations: migrations
+  migrationsOn: false
 
 kafka:
   producerTopic: "comments"
