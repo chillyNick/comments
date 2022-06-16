@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Shopify/sarama"
 	"github.com/homework3/comments/internal/config"
 	"github.com/homework3/comments/internal/db_model"

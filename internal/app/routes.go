@@ -2,12 +2,13 @@ package app
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/homework3/comments/internal/db_model"
 	"github.com/homework3/comments/internal/dto"
 	"github.com/rs/zerolog/log"
-	"net/http"
-	"strconv"
 )
 
 func (a *App) getRouter() *mux.Router {

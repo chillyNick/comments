@@ -3,6 +3,11 @@ package app
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/homework3/comments/internal/cache"
 	"github.com/homework3/comments/internal/cache/redis"
 	"github.com/homework3/comments/internal/config"
@@ -12,10 +17,6 @@ import (
 	"github.com/homework3/comments/internal/repository"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type App struct {

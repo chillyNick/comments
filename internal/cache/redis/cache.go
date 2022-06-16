@@ -2,13 +2,14 @@ package redis
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/go-redis/redis/v9"
 	"github.com/homework3/comments/internal/cache"
 	"github.com/homework3/comments/internal/config"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
-	"time"
 )
-import "github.com/go-redis/redis/v9"
 
 type r struct {
 	client *redis.Client

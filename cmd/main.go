@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/homework3/comments/internal/app"
 	"github.com/homework3/comments/internal/config"
 	"github.com/homework3/comments/internal/database"

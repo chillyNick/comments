@@ -1,9 +1,10 @@
 package metrics
 
 import (
-	"github.com/homework3/comments/internal/config"
 	"net/http"
 	_ "net/http/pprof"
+
+	"github.com/homework3/comments/internal/config"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

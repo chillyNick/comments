@@ -1,13 +1,14 @@
 package http_server
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"net/http"
-	"strconv"
 )
 
 var totalRequests = promauto.NewCounterVec(
