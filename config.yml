@@ -1,0 +1,36 @@
+debug: true
+
+rest:
+  host: localhost
+  port: 8080
+
+metrics:
+  host: localhost
+  port: 9100
+  path: /metrics
+
+jaeger:
+  service: "comments"
+  host: "localhost"
+  port: "6831"
+
+database:
+  host: localhost
+  port: 5432
+  user: docker
+  password: docker
+  name: comments
+  migrations: migrations
+  migrationsOn: false
+
+kafka:
+  producerTopic: "comments"
+  consumerTopic: "moderation_comments"
+  groupId: "comments"
+  brokers:
+    - "localhost:9094"
+
+redis:
+  host: localhost
+  port: 6379
+  password:
